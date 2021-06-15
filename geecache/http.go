@@ -14,6 +14,7 @@ import (
 const defaultBasePath = "/_geecache/"
 const defaultReplicas = 50
 
+//类型断言判断代码中httpGetter是否实现了PeerGetter接口
 var _ PeerGetter = (*httpGetter)(nil)
 var _ PeerPicker = (*HTTPPool)(nil)
 
@@ -71,7 +72,9 @@ func (p *HTTPPool)Log(format string, v ...interface{})  {
 	log.Printf("[Server %s] %s", p.self, fmt.Sprintf(format, v...))
 }
 
-func (h *httpGetter)Get(group string, key string) ([]byte, error) {
+//http中Restful的Get请求封装 httpGetter 实现了 PeerGetter
+func (h *httpGetter)HttpGet(group string, key string) ([]byte, error) {
+	//拼接http的Get请求的url路径
 	u := fmt.Sprintf("%v%v/%v", h.baseURL, url.QueryEscape(group), url.QueryEscape(key))
 	res, err := http.Get(u)
 	if err != nil {
@@ -82,7 +85,7 @@ func (h *httpGetter)Get(group string, key string) ([]byte, error) {
 	if res.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("Server returned : %v", res.Status)
 	}
-
+	//读取response中的数据
 	bytes, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		return nil, fmt.Errorf("Reading response body : %v", err)

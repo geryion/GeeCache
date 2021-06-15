@@ -110,7 +110,7 @@ func (g *Group)load(key string) (value ByteView, err error) {
 }
 
 func (g *Group)getFromPeer(peer PeerGetter, key string) (ByteView, error) {
-	bytes, err := peer.Get(g.name, key)
+	bytes, err := peer.HttpGet(g.name, key)
 	if err != nil {
 		return ByteView{}, err
 	}
