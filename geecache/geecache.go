@@ -1,6 +1,7 @@
 package geecache
 
 import (
+	"GeeCache/geecache/singleflight"
 	"fmt"
 	"log"
 	"sync"
@@ -24,6 +25,7 @@ type Group struct {
 	getter    Getter
 	mainCache cache
 	peers 	  PeerPicker
+	loader 	  *singleflight.Group
 }
 
 var (
@@ -31,6 +33,7 @@ var (
 	groups = make(map[string]*Group)
 )
 
+//创建新的分组Group 内存中map的group的name对应group内容
 func NewGroup(name string, cacheBytes int64, getter Getter) *Group {
 	if getter == nil {
 		panic("nil Getter")
@@ -41,7 +44,9 @@ func NewGroup(name string, cacheBytes int64, getter Getter) *Group {
 		name:      name,
 		getter:    getter,
 		mainCache: cache{cacheBytes: cacheBytes},
+		loader: &singleflight.Group{},
 	}
+	//内存中保存了group的对应关系
 	groups[name] = g
 	return g
 }
@@ -86,15 +91,22 @@ func (g *Group)RegisterPeers(peers PeerPicker) {
 }
 
 func (g *Group)load(key string) (value ByteView, err error) {
-	if g.peers != nil {
-		if peer, ok := g.peers.PickPeer(key);ok {
-			if value, err = g.getFromPeer(peer, key);err == nil {
-				return value, nil
+	viewi, err := g.loader.Do(key, func() (interface{}, error) {
+		if g.peers != nil {
+			if peer, ok := g.peers.PickPeer(key);ok {
+				if value, err = g.getFromPeer(peer, key);err == nil {
+					return value, nil
+				}
+				log.Println("[GeeCache] Failed to get from peer", err)
 			}
-			log.Println("[GeeCache] Failed to get from peer", err)
 		}
+		return g.getLocally(key)
+	})
+
+	if err == nil {
+		return viewi.(ByteView), nil
 	}
-	return g.getLocally(key)
+	return
 }
 
 func (g *Group)getFromPeer(peer PeerGetter, key string) (ByteView, error) {

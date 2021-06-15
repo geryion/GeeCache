@@ -90,6 +90,7 @@ func (h *httpGetter)Get(group string, key string) ([]byte, error) {
 	return bytes, nil
 }
 
+//给节点分配http的url路径 均保存在内存中 map对应的映射关系
 func (p *HTTPPool)Set(peers ...string) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
