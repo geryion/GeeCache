@@ -14,8 +14,10 @@
 
 7、使用Protobuf
 
-**ubuntu 安装搭建Protobuf环境**
+ubuntu 安装搭建Protobuf环境
+
 1）下载并解压protobuf安装包到/usr/local下
+
 wget https://github.com/protocolbuffers/protobuf/releases/download/v3.11.2/protoc-3.11.2-linux-x86_64.zip
 
 sudo 7z x protoc-3.11.2-linux-x86_64.zip -o/usr/local
