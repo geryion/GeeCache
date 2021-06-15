@@ -23,9 +23,11 @@ wget https://github.com/protocolbuffers/protobuf/releases/download/v3.11.2/proto
 sudo 7z x protoc-3.11.2-linux-x86_64.zip -o/usr/local
 
 2）将/usr/local/bin加入到PATH中
+
 PS：protoc --version (能够看到当前protobuf版本表示安装正确)
 
 3）下载转换为golang的工具包
+
 go get -u github.com/golang/protobuf/protoc-gen-go
 
 4）将$GOPATH/bin加入到PATH中
